@@ -1,0 +1,135 @@
+# Fastfile for n8n Monitor Android App
+# This file contains the fastlane.tools configuration
+
+default_platform(:android)
+
+platform :android do
+  desc "Runs all the tests"
+  lane :test do
+    gradle(task: "test")
+  end
+
+  desc "Build debug APK"
+  lane :debug do
+    gradle(
+      task: "assembleDebug",
+      print_command: false
+    )
+  end
+
+  desc "Build release APK"
+  lane :release_apk do
+    gradle(
+      task: "assembleRelease",
+      print_command: false
+    )
+  end
+
+  desc "Build release AAB (Android App Bundle)"
+  lane :release_aab do
+    gradle(
+      task: "bundleRelease",
+      print_command: false
+    )
+  end
+
+  desc "Deploy a new version to the Google Play Store (Internal Testing)"
+  lane :internal do
+    # Build the AAB
+    gradle(
+      task: "bundleRelease",
+      print_command: false
+    )
+    
+    # Upload to Google Play Internal Testing
+    upload_to_play_store(
+      track: "internal",
+      aab: "app/build/outputs/bundle/release/app-release.aab",
+      skip_upload_apk: true,
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true
+    )
+  end
+
+  desc "Deploy a new version to the Google Play Store (Alpha)"
+  lane :alpha do
+    # Build the AAB
+    gradle(
+      task: "bundleRelease",
+      print_command: false
+    )
+    
+    # Upload to Google Play Alpha
+    upload_to_play_store(
+      track: "alpha",
+      aab: "app/build/outputs/bundle/release/app-release.aab",
+      skip_upload_apk: true,
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true
+    )
+  end
+
+  desc "Deploy a new version to the Google Play Store (Beta)"
+  lane :beta do
+    # Build the AAB
+    gradle(
+      task: "bundleRelease",
+      print_command: false
+    )
+    
+    # Upload to Google Play Beta
+    upload_to_play_store(
+      track: "beta",
+      aab: "app/build/outputs/bundle/release/app-release.aab",
+      skip_upload_apk: true,
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true
+    )
+  end
+
+  desc "Deploy a new version to the Google Play Store (Production)"
+  lane :production do
+    # Build the AAB
+    gradle(
+      task: "bundleRelease",
+      print_command: false
+    )
+    
+    # Upload to Google Play Production
+    upload_to_play_store(
+      track: "production",
+      aab: "app/build/outputs/bundle/release/app-release.aab",
+      skip_upload_apk: true,
+      skip_upload_metadata: false,
+      skip_upload_images: false,
+      skip_upload_screenshots: false
+    )
+  end
+
+  desc "Run security audit"
+  lane :security_audit do
+    sh("../scripts/security-audit.sh")
+  end
+
+  desc "Setup JDK 17 environment"
+  lane :setup_jdk do
+    sh("../scripts/jdk17-wrapper.sh")
+  end
+
+  desc "Complete build and test pipeline"
+  lane :ci do
+    setup_jdk
+    security_audit
+    test
+    release_aab
+  end
+
+  # Error handling
+  error do |lane, exception|
+    UI.error("Lane #{lane} failed with exception: #{exception}")
+    # You can add custom error handling here, like sending notifications
+  end
+end

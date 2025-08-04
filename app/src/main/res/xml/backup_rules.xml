@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<full-backup-content>
+    <!-- Only backup settings, not sensitive data -->
+    <include domain="sharedpref" path="settings"/>
+    <exclude domain="database" path="n8n_monitor.db"/>
+    <exclude domain="file" path="logs"/>
+</full-backup-content> 

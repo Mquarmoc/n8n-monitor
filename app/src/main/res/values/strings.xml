@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">n8n Monitor</string>
+    
+    <!-- Navigation -->
+    <string name="nav_workflows">Workflows</string>
+    <string name="nav_settings">Settings</string>
+    
+    <!-- Workflow List -->
+    <string name="workflows_title">n8n Workflows</string>
+    <string name="workflow_active">Active</string>
+    <string name="workflow_inactive">Inactive</string>
+    <string name="workflow_id">ID: %s</string>
+    <string name="workflow_updated">Updated: %s</string>
+    <string name="workflow_bookmark_add">Add bookmark</string>
+    <string name="workflow_bookmark_remove">Remove bookmark</string>
+    <string name="workflow_settings">Settings</string>
+    
+    <!-- Workflow Detail -->
+    <string name="workflow_detail_title">Workflow Details</string>
+    <string name="workflow_detail_last_updated">Last updated: %s</string>
+    <string name="workflow_detail_tags">Tags: %s</string>
+    <string name="execution_id">Execution %s...</string>
+    <string name="execution_started">Started: %s</string>
+    <string name="execution_ended">Ended: %s</string>
+    <string name="execution_duration">%dms</string>
+    <string name="execution_stop">Stop execution</string>
+    <string name="execution_stop_confirm_title">Stop Execution</string>
+    <string name="execution_stop_confirm_message">Are you sure you want to stop this execution? This action cannot be undone.</string>
+    <string name="execution_stop_confirm">Stop</string>
+    <string name="execution_stop_cancel">Cancel</string>
+    
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_connection">Connection</string>
+    <string name="settings_n8n_url">n8n Base URL</string>
+    <string name="settings_n8n_url_placeholder">https://your-n8n-instance.com</string>
+    <string name="settings_api_key">API Key</string>
+    <string name="settings_api_key_placeholder">Enter your n8n API key</string>
+    <string name="settings_save">Save</string>
+    <string name="settings_test">Test</string>
+    <string name="settings_monitoring">Monitoring</string>
+    <string name="settings_poll_interval">Poll Interval</string>
+    <string name="settings_poll_interval_minutes">%d minutes</string>
+    <string name="settings_notifications">Background Notifications</string>
+    <string name="settings_notifications_desc">Receive notifications for failed executions</string>
+    <string name="settings_appearance">Appearance</string>
+    <string name="settings_dark_mode">Dark Mode</string>
+    <string name="settings_dark_mode_desc">Use dark theme</string>
+    <string name="settings_security">Security</string>
+    <string name="settings_biometric">Biometric Authentication</string>
+    <string name="settings_biometric_desc">Require biometric to access API key</string>
+    <string name="settings_data_management">Data Management</string>
+    <string name="settings_clear_all">Clear All Settings</string>
+    
+    <!-- Status -->
+    <string name="status_success">Success</string>
+    <string name="status_failed">Failed</string>
+    <string name="status_running">Running</string>
+    <string name="status_unknown">Unknown</string>
+    
+    <!-- Error Messages -->
+    <string name="error_loading_workflows">Failed to load workflows</string>
+    <string name="error_loading_executions">Failed to load executions</string>
+    <string name="error_stopping_execution">Failed to stop execution</string>
+    <string name="error_unknown">Unknown error occurred</string>
+    <string name="error_no_workflows">No active workflows found. Pull to refresh to try again.</string>
+    <string name="error_no_executions">No executions found for this workflow. Pull to refresh to try again.</string>
+    
+    <!-- Notifications -->
+    <string name="notification_workflow_failed">Workflow Execution Failed</string>
+    <string name="notification_multiple_failures">Multiple Workflow Failures</string>
+    <string name="notification_channel_failures">n8n Failures</string>
+    <string name="notification_channel_failures_desc">Notifications for failed n8n workflow executions</string>
+    <string name="notification_channel_general">n8n General</string>
+    <string name="notification_channel_general_desc">General n8n monitoring notifications</string>
+    
+    <!-- Actions -->
+    <string name="action_retry">Retry</string>
+    <string name="action_dismiss">Dismiss</string>
+    <string name="action_refresh">Refresh</string>
+    <string name="action_back">Back</string>
+    <string name="action_save">Save</string>
+    <string name="action_test">Test</string>
+    <string name="action_clear">Clear</string>
+    
+    <!-- Content Descriptions -->
+    <string name="cd_settings">Settings</string>
+    <string name="cd_back">Back</string>
+    <string name="cd_bookmark">Bookmark</string>
+    <string name="cd_stop">Stop</string>
+    <string name="cd_visibility">Visibility</string>
+    <string name="cd_visibility_off">Hide</string>
+    <string name="cd_visibility_on">Show</string>
+    <string name="cd_link">Link</string>
+    <string name="cd_key">Key</string>
+    <string name="cd_save">Save</string>
+    <string name="cd_wifi">WiFi</string>
+    <string name="cd_clear">Clear</string>
+    <string name="cd_error">Error</string>
+    <string name="cd_list">List</string>
+    <string name="cd_history">History</string>
+    <string name="cd_check_circle">Check Circle</string>
+    <string name="cd_cancel">Cancel</string>
+    <string name="cd_play_arrow">Play Arrow</string>
+    <string name="cd_info">Info</string>
+</resources> 

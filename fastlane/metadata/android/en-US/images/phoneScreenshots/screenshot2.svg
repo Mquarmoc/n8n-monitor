@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1080" height="1920" viewBox="0 0 1080 1920" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="1080" height="1920" fill="#f5f5f5"/>
+  
+  <!-- Status bar -->
+  <rect width="1080" height="80" fill="#04A277"/>
+  <text x="540" y="50" text-anchor="middle" fill="white" font-family="Arial" font-size="24" font-weight="bold">n8n Monitor</text>
+  
+  <!-- Header -->
+  <rect x="0" y="80" width="1080" height="120" fill="white"/>
+  <text x="40" y="140" fill="#333" font-family="Arial" font-size="32" font-weight="bold">Executions</text>
+  <text x="40" y="180" fill="#666" font-family="Arial" font-size="20">Recent workflow executions</text>
+  
+  <!-- Execution list -->
+  <rect x="40" y="240" width="1000" height="120" rx="8" fill="white" stroke="#e0e0e0" stroke-width="1"/>
+  <circle cx="80" cy="290" r="12" fill="#4caf50"/>
+  <text x="110" y="280" fill="#333" font-family="Arial" font-size="20" font-weight="bold">Email Automation</text>
+  <text x="110" y="305" fill="#666" font-family="Arial" font-size="16">Success • 2 min ago</text>
+  <text x="900" y="295" fill="#4caf50" font-family="Arial" font-size="16" font-weight="bold">✓ Success</text>
+  
+  <rect x="40" y="380" width="1000" height="120" rx="8" fill="white" stroke="#e0e0e0" stroke-width="1"/>
+  <circle cx="80" cy="430" r="12" fill="#4caf50"/>
+  <text x="110" y="420" fill="#333" font-family="Arial" font-size="20" font-weight="bold">Data Sync</text>
+  <text x="110" y="445" fill="#666" font-family="Arial" font-size="16">Success • 15 min ago</text>
+  <text x="900" y="435" fill="#4caf50" font-family="Arial" font-size="16" font-weight="bold">✓ Success</text>
+  
+  <rect x="40" y="520" width="1000" height="120" rx="8" fill="white" stroke="#e0e0e0" stroke-width="1"/>
+  <circle cx="80" cy="570" r="12" fill="#ff9800"/>
+  <text x="110" y="560" fill="#333" font-family="Arial" font-size="20" font-weight="bold">Backup Process</text>
+  <text x="110" y="585" fill="#666" font-family="Arial" font-size="16">Warning • 1 hour ago</text>
+  <text x="900" y="575" fill="#ff9800" font-family="Arial" font-size="16" font-weight="bold">⚠ Warning</text>
+  
+  <rect x="40" y="660" width="1000" height="120" rx="8" fill="white" stroke="#e0e0e0" stroke-width="1"/>
+  <circle cx="80" cy="710" r="12" fill="#f44336"/>
+  <text x="110" y="700" fill="#333" font-family="Arial" font-size="20" font-weight="bold">API Integration</text>
+  <text x="110" y="725" fill="#666" font-family="Arial" font-size="16">Failed • 2 hours ago</text>
+  <text x="900" y="715" fill="#f44336" font-family="Arial" font-size="16" font-weight="bold">✗ Failed</text>
+  
+  <rect x="40" y="800" width="1000" height="120" rx="8" fill="white" stroke="#e0e0e0" stroke-width="1"/>
+  <circle cx="80" cy="850" r="12" fill="#4caf50"/>
+  <text x="110" y="840" fill="#333" font-family="Arial" font-size="20" font-weight="bold">Email Automation</text>
+  <text x="110" y="865" fill="#666" font-family="Arial" font-size="16">Success • 3 hours ago</text>
+  <text x="900" y="855" fill="#4caf50" font-family="Arial" font-size="16" font-weight="bold">✓ Success</text>
+  
+  <!-- Statistics card -->
+  <rect x="40" y="960" width="1000" height="200" rx="12" fill="white" stroke="#e0e0e0" stroke-width="2"/>
+  <text x="60" y="1000" fill="#333" font-family="Arial" font-size="24" font-weight="bold">Today's Statistics</text>
+  
+  <text x="60" y="1040" fill="#666" font-family="Arial" font-size="18">Total Executions:</text>
+  <text x="300" y="1040" fill="#333" font-family="Arial" font-size="18" font-weight="bold">47</text>
+  
+  <text x="60" y="1070" fill="#666" font-family="Arial" font-size="18">Successful:</text>
+  <text x="300" y="1070" fill="#4caf50" font-family="Arial" font-size="18" font-weight="bold">42</text>
+  
+  <text x="60" y="1100" fill="#666" font-family="Arial" font-size="18">Failed:</text>
+  <text x="300" y="1100" fill="#f44336" font-family="Arial" font-size="18" font-weight="bold">3</text>
+  
+  <text x="60" y="1130" fill="#666" font-family="Arial" font-size="18">Warnings:</text>
+  <text x="300" y="1130" fill="#ff9800" font-family="Arial" font-size="18" font-weight="bold">2</text>
+  
+  <!-- Bottom navigation -->
+  <rect x="0" y="1800" width="1080" height="120" fill="white" stroke="#e0e0e0" stroke-width="2"/>
+  <text x="180" y="1870" text-anchor="middle" fill="#666" font-family="Arial" font-size="18">Workflows</text>
+  <text x="540" y="1870" text-anchor="middle" fill="#04A277" font-family="Arial" font-size="18" font-weight="bold">Executions</text>
+  <text x="900" y="1870" text-anchor="middle" fill="#666" font-family="Arial" font-size="18">Settings</text>
+</svg>

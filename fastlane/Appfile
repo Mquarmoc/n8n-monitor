@@ -1,0 +1,15 @@
+# Appfile for n8n Monitor Android App
+# This file contains the configuration for fastlane
+
+# The package name of your application
+package_name("com.example.n8nmonitor")
+
+# The path to your Google Play Console service account JSON file
+# You should set this as an environment variable for security
+# json_key_file(ENV["GOOGLE_PLAY_JSON_KEY_PATH"])
+
+# Alternatively, you can use the JSON key data directly
+# json_key_data(ENV["GOOGLE_PLAY_JSON_KEY_DATA"])
+
+# For more information about the Appfile, see:
+#     https://docs.fastlane.tools/advanced/#appfile

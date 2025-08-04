@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- n8n logo design -->
+    <path
+        android:fillColor="@color/white"
+        android:pathData="M30,40 L35,40 L35,50 L45,35 L50,35 L40,50 L50,65 L45,65 L35,50 L35,68 L30,68 Z"/>
+    <path
+        android:fillColor="@color/white"
+        android:pathData="M58,68 L78,68 A2,2 0,0 0,80 66 L80,42 A2,2 0,0 0,78 40 L58,40 A2,2 0,0 0,56 42 L56,66 A2,2 0,0 0,58 68 Z M61,45 L75,45 L75,63 L61,63 Z"/>
+</vector>
