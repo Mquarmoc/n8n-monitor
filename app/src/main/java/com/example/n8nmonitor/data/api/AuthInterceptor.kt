@@ -2,6 +2,7 @@ package com.example.n8nmonitor.data.api
 
 import okhttp3.Interceptor
 import okhttp3.Response
+import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
 class AuthInterceptor @Inject constructor(
@@ -10,9 +11,9 @@ class AuthInterceptor @Inject constructor(
 
     override fun intercept(chain: Interceptor.Chain): Response {
         val originalRequest = chain.request()
-        val apiKey = apiKeyProvider.getApiKey()
+        val apiKey = runBlocking { apiKeyProvider.getApiKey() }
         
-        return if (apiKey != null) {
+        return if (apiKey != null && apiKey.isNotBlank()) {
             val authenticatedRequest = originalRequest.newBuilder()
                 .header("X-N8N-API-KEY", apiKey)
                 .header("Accept", "application/json")
@@ -26,5 +27,6 @@ class AuthInterceptor @Inject constructor(
 }
 
 interface ApiKeyProvider {
-    fun getApiKey(): String?
-} 
+    suspend fun getApiKey(): String?
+    suspend fun getBaseUrl(): String?
+}

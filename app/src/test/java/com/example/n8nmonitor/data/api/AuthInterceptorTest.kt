@@ -1,6 +1,8 @@
 package com.example.n8nmonitor.data.api
 
 import com.example.n8nmonitor.data.api.AuthInterceptor
+import com.example.n8nmonitor.data.api.ApiKeyProvider
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import okhttp3.Interceptor
@@ -14,7 +16,7 @@ import org.junit.Test
 class AuthInterceptorTest {
 
     private lateinit var interceptor: AuthInterceptor
-    private lateinit var apiKeyProvider: AuthInterceptor.ApiKeyProvider
+    private lateinit var apiKeyProvider: ApiKeyProvider
     private lateinit var chain: Interceptor.Chain
 
     @Before
@@ -32,7 +34,7 @@ class AuthInterceptorTest {
             .url("https://api.example.com/test")
             .build()
         
-        every { apiKeyProvider.getApiKey() } returns apiKey
+        coEvery { apiKeyProvider.getApiKey() } returns apiKey
         every { chain.request() } returns originalRequest
         every { chain.proceed(any()) } returns mockk<Response>()
 
@@ -53,7 +55,7 @@ class AuthInterceptorTest {
             .url("https://api.example.com/test")
             .build()
         
-        every { apiKeyProvider.getApiKey() } returns apiKey
+        coEvery { apiKeyProvider.getApiKey() } returns apiKey
         every { chain.request() } returns originalRequest
         every { chain.proceed(any()) } answers {
             val request = firstArg<Request>()
@@ -76,7 +78,7 @@ class AuthInterceptorTest {
             .url("https://api.example.com/test")
             .build()
         
-        every { apiKeyProvider.getApiKey() } returns apiKey
+        coEvery { apiKeyProvider.getApiKey() } returns apiKey
         every { chain.request() } returns originalRequest
         every { chain.proceed(any()) } answers {
             val request = firstArg<Request>()
@@ -99,7 +101,7 @@ class AuthInterceptorTest {
             .url("https://api.example.com/test")
             .build()
         
-        every { apiKeyProvider.getApiKey() } returns apiKey
+        coEvery { apiKeyProvider.getApiKey() } returns apiKey
         every { chain.request() } returns originalRequest
         every { chain.proceed(any()) } answers {
             val request = firstArg<Request>()
@@ -121,7 +123,7 @@ class AuthInterceptorTest {
             .url("https://api.example.com/test")
             .build()
         
-        every { apiKeyProvider.getApiKey() } returns null
+        coEvery { apiKeyProvider.getApiKey() } returns null
         every { chain.request() } returns originalRequest
         every { chain.proceed(originalRequest) } returns mockk<Response>()
 
@@ -141,7 +143,7 @@ class AuthInterceptorTest {
             .url("https://api.example.com/test")
             .build()
         
-        every { apiKeyProvider.getApiKey() } returns ""
+        coEvery { apiKeyProvider.getApiKey() } returns ""
         every { chain.request() } returns originalRequest
         every { chain.proceed(originalRequest) } returns mockk<Response>()
 
@@ -163,7 +165,7 @@ class AuthInterceptorTest {
             .header("Custom-Header", "custom-value")
             .build()
         
-        every { apiKeyProvider.getApiKey() } returns apiKey
+        coEvery { apiKeyProvider.getApiKey() } returns apiKey
         every { chain.request() } returns originalRequest
         every { chain.proceed(any()) } answers {
             val request = firstArg<Request>()
@@ -180,4 +182,4 @@ class AuthInterceptorTest {
         // Then
         // Verification is done in the chain.proceed mock
     }
-} 
+}

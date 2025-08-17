@@ -147,7 +147,7 @@ class N8nRepositoryTest {
         coEvery { executionDao.getExecutionsForWorkflow(workflowId) } returns emptyList()
 
         // When
-        val result = repository.refreshExecutions(workflowId)
+        val result = repository.refreshExecutionsForWorkflow(workflowId, 10)
 
         // Then
         assertEquals(1, result.size)
@@ -206,4 +206,4 @@ class N8nRepositoryTest {
         // Then
         // Verify the method was called (implicitly verified by coEvery)
     }
-} 
+}

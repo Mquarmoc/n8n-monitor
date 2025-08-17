@@ -53,13 +53,15 @@ class WorkflowListViewModelTest {
                 id = "1",
                 name = "Test Workflow",
                 active = true,
+                updatedAt = "2023-01-01T00:00:00Z",
+                tags = null,
                 lastExecutionStatus = "success",
-                lastExecutionTime = System.currentTimeMillis(),
+                lastExecutionTime = "2023-01-01T00:00:00Z",
                 isBookmarked = false,
                 lastSyncTime = System.currentTimeMillis()
             )
         )
-        coEvery { repository.getWorkflows() } returns workflows
+        coEvery { repository.refreshWorkflows(active = true) } returns Result.success(workflows)
 
         // When
         viewModel.loadWorkflows()
@@ -75,7 +77,7 @@ class WorkflowListViewModelTest {
     @Test
     fun `loadWorkflows sets error state on exception`() = runTest {
         // Given
-        coEvery { repository.getWorkflows() } throws RuntimeException("Network error")
+        coEvery { repository.refreshWorkflows(active = true) } returns Result.failure(RuntimeException("Network error"))
 
         // When
         viewModel.loadWorkflows()
@@ -96,13 +98,15 @@ class WorkflowListViewModelTest {
                 id = "1",
                 name = "Refreshed Workflow",
                 active = true,
+                updatedAt = "2023-01-01T00:00:00Z",
+                tags = null,
                 lastExecutionStatus = "success",
-                lastExecutionTime = System.currentTimeMillis(),
+                lastExecutionTime = "2023-01-01T00:00:00Z",
                 isBookmarked = false,
                 lastSyncTime = System.currentTimeMillis()
             )
         )
-        coEvery { repository.refreshWorkflows() } returns workflows
+        coEvery { repository.refreshWorkflows(active = true) } returns Result.success(workflows)
 
         // When
         viewModel.refreshWorkflows()
@@ -118,7 +122,7 @@ class WorkflowListViewModelTest {
     @Test
     fun `refreshWorkflows sets error state on exception`() = runTest {
         // Given
-        coEvery { repository.refreshWorkflows() } throws RuntimeException("API error")
+        coEvery { repository.refreshWorkflows(active = true) } returns Result.failure(RuntimeException("API error"))
 
         // When
         viewModel.refreshWorkflows()
@@ -136,7 +140,7 @@ class WorkflowListViewModelTest {
         // Given
         val workflowId = "1"
         val isBookmarked = true
-        coEvery { repository.toggleBookmark(workflowId, isBookmarked) } returns Unit
+        coEvery { repository.updateBookmark(workflowId, isBookmarked) } returns Unit
 
         // When
         viewModel.toggleBookmark(workflowId, isBookmarked)
@@ -147,13 +151,13 @@ class WorkflowListViewModelTest {
 
     @Test
     fun `clearError clears error state`() = runTest {
-        // Given
-        viewModel.state.value = WorkflowListState(
-            workflows = emptyList(),
-            isLoading = false,
-            isRefreshing = false,
-            error = "Some error"
-        )
+        // Given - First cause an error
+        coEvery { repository.refreshWorkflows(active = true) } returns Result.failure(RuntimeException("Test error"))
+        viewModel.loadWorkflows()
+        testDispatcher.scheduler.advanceUntilIdle()
+        
+        // Verify error is set
+        assertTrue(viewModel.state.value.error != null)
 
         // When
         viewModel.clearError()
@@ -161,4 +165,4 @@ class WorkflowListViewModelTest {
         // Then
         assertTrue(viewModel.state.value.error == null)
     }
-} 
+}

@@ -3,13 +3,19 @@
     <cloud-backup>
         <!-- Only backup settings, not sensitive data -->
         <include domain="sharedpref" path="settings"/>
+        <!-- Include domains first, then exclude sensitive data -->
+        <include domain="database"/>
+        <include domain="file"/>
         <exclude domain="database" path="n8n_monitor.db"/>
         <exclude domain="file" path="logs"/>
     </cloud-backup>
     <device-transfer>
         <!-- Only transfer settings, not sensitive data -->
         <include domain="sharedpref" path="settings"/>
+        <!-- Include domains first, then exclude sensitive data -->
+        <include domain="database"/>
+        <include domain="file"/>
         <exclude domain="database" path="n8n_monitor.db"/>
         <exclude domain="file" path="logs"/>
     </device-transfer>
-</data-extraction-rules> 
+</data-extraction-rules>

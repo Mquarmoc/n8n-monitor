@@ -1,6 +1,7 @@
 package com.example.n8nmonitor.ui.viewmodel
 
 import com.example.n8nmonitor.data.settings.SettingsDataStore
+import com.example.n8nmonitor.data.repository.N8nRepository
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
@@ -23,12 +24,14 @@ class SettingsViewModelTest {
 
     private lateinit var viewModel: SettingsViewModel
     private lateinit var settingsDataStore: SettingsDataStore
+    private lateinit var repository: N8nRepository
     private val testDispatcher = StandardTestDispatcher()
 
     @Before
     fun setup() {
         Dispatchers.setMain(testDispatcher)
         settingsDataStore = mockk(relaxed = true)
+        repository = mockk(relaxed = true)
         
         // Setup default flow values
         coEvery { settingsDataStore.baseUrl } returns flowOf("https://default.example.com")
@@ -38,7 +41,7 @@ class SettingsViewModelTest {
         coEvery { settingsDataStore.isBiometricEnabled } returns flowOf(false)
         coEvery { settingsDataStore.isNotificationEnabled } returns flowOf(true)
         
-        viewModel = SettingsViewModel(settingsDataStore)
+        viewModel = SettingsViewModel(settingsDataStore, repository)
     }
 
     @After
@@ -63,7 +66,7 @@ class SettingsViewModelTest {
         val testUrl = "https://test.example.com"
         
         // When
-        viewModel.setBaseUrl(testUrl)
+        viewModel.updateBaseUrl(testUrl)
         testDispatcher.scheduler.advanceUntilIdle()
         
         // Then
@@ -77,7 +80,7 @@ class SettingsViewModelTest {
         val testKey = "test-api-key-123"
         
         // When
-        viewModel.setApiKey(testKey)
+        viewModel.updateApiKey(testKey)
         testDispatcher.scheduler.advanceUntilIdle()
         
         // Then
@@ -91,7 +94,7 @@ class SettingsViewModelTest {
         val testInterval = 30
         
         // When
-        viewModel.setPollInterval(testInterval)
+        viewModel.updatePollInterval(testInterval)
         testDispatcher.scheduler.advanceUntilIdle()
         
         // Then
@@ -159,8 +162,8 @@ class SettingsViewModelTest {
     @Test
     fun `clearSettings resets state and calls datastore`() = runTest {
         // Given - Set some non-default values
-        viewModel.setBaseUrl("https://test.example.com")
-        viewModel.setApiKey("test-key")
+        viewModel.updateBaseUrl("https://test.example.com")
+        viewModel.updateApiKey("test-key")
         viewModel.toggleDarkMode(true)
         testDispatcher.scheduler.advanceUntilIdle()
         

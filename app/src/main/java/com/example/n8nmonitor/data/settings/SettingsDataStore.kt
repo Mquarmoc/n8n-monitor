@@ -4,7 +4,9 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.*
 import androidx.datastore.preferences.preferencesDataStore
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -13,12 +15,12 @@ private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(na
 
 @Singleton
 class SettingsDataStore @Inject constructor(
-    private val context: Context
+    @ApplicationContext private val context: Context,
+    private val secureStorage: SecureStorage
 ) {
 
     private object PreferencesKeys {
-        val BASE_URL = stringPreferencesKey("base_url")
-        val API_KEY = stringPreferencesKey("api_key")
+        // Removed BASE_URL and API_KEY - now stored securely
         val POLL_INTERVAL_MINUTES = intPreferencesKey("poll_interval_minutes")
         val DARK_MODE = booleanPreferencesKey("dark_mode")
         val BIOMETRIC_ENABLED = booleanPreferencesKey("biometric_enabled")
@@ -26,12 +28,12 @@ class SettingsDataStore @Inject constructor(
         val LAST_SYNC_TIME = longPreferencesKey("last_sync_time")
     }
 
-    val baseUrl: Flow<String?> = context.dataStore.data.map { preferences ->
-        preferences[PreferencesKeys.BASE_URL]
+    val baseUrl: Flow<String?> = flow {
+        emit(secureStorage.getBaseUrl())
     }
 
-    val apiKey: Flow<String?> = context.dataStore.data.map { preferences ->
-        preferences[PreferencesKeys.API_KEY]
+    val apiKey: Flow<String?> = flow {
+        emit(secureStorage.getApiKey())
     }
 
     val pollIntervalMinutes: Flow<Int> = context.dataStore.data.map { preferences ->
@@ -55,15 +57,11 @@ class SettingsDataStore @Inject constructor(
     }
 
     suspend fun setBaseUrl(url: String) {
-        context.dataStore.edit { preferences ->
-            preferences[PreferencesKeys.BASE_URL] = url
-        }
+        secureStorage.storeBaseUrl(url)
     }
 
     suspend fun setApiKey(key: String) {
-        context.dataStore.edit { preferences ->
-            preferences[PreferencesKeys.API_KEY] = key
-        }
+        secureStorage.storeApiKey(key)
     }
 
     suspend fun setPollIntervalMinutes(minutes: Int) {
@@ -97,8 +95,12 @@ class SettingsDataStore @Inject constructor(
     }
 
     suspend fun clearSettings() {
+        // Clear secure data
+        secureStorage.clearSecureData()
+        
+        // Clear regular preferences
         context.dataStore.edit { preferences ->
             preferences.clear()
         }
     }
-} 
+}

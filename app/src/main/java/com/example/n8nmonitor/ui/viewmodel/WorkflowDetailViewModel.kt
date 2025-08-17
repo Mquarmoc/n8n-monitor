@@ -35,16 +35,7 @@ class WorkflowDetailViewModel @Inject constructor(
             try {
                 // Load workflow info
                 repository.getWorkflow(workflowId)
-                    .onSuccess { workflowDto ->
-                        // Convert to entity for consistency
-                        val workflowEntity = com.example.n8nmonitor.data.database.WorkflowEntity(
-                            id = workflowDto.id,
-                            name = workflowDto.name,
-                            active = workflowDto.active,
-                            updatedAt = workflowDto.updatedAt,
-                            tags = workflowDto.tags?.joinToString(",")
-                        )
-                        
+                    .onSuccess { workflowEntity ->
                         _state.update { it.copy(workflow = workflowEntity) }
                     }
                     .onFailure { exception ->
@@ -125,15 +116,9 @@ class WorkflowDetailViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 repository.stopExecution(executionId)
-                    .onSuccess { success ->
-                        if (success) {
-                            // Refresh executions to show updated status
-                            refreshExecutions()
-                        } else {
-                            _state.update { 
-                                it.copy(error = "Failed to stop execution")
-                            }
-                        }
+                    .onSuccess {
+                        // Refresh executions to show updated status
+                        refreshExecutions()
                     }
                     .onFailure { exception ->
                         _state.update { 
@@ -151,4 +136,4 @@ class WorkflowDetailViewModel @Inject constructor(
     fun clearError() {
         _state.update { it.copy(error = null) }
     }
-} 
+}

@@ -73,7 +73,7 @@ fun WorkflowDetailScreen(
                 }
                 state.error != null -> {
                     ErrorContent(
-                        message = state.error!!,
+                        message = state.error ?: "Unknown error occurred",
                         onRetry = { viewModel.loadWorkflowDetails() },
                         onDismiss = { viewModel.clearError() }
                     )

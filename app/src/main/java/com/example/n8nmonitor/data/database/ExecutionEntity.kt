@@ -18,7 +18,14 @@ import androidx.room.PrimaryKey
     indices = [
         Index(value = ["workflowId"]),
         Index(value = ["status"]),
-        Index(value = ["startTime"])
+        Index(value = ["startTime"]),
+        Index(value = ["lastSyncTime"]),
+        // Composite indexes for common query patterns
+        Index(value = ["workflowId", "startTime"]),
+        Index(value = ["workflowId", "status"]),
+        Index(value = ["status", "startTime"]),
+        Index(value = ["workflowId", "status", "startTime"]),
+        Index(value = ["lastSyncTime", "workflowId"])
     ]
 )
 data class ExecutionEntity(
@@ -30,4 +37,4 @@ data class ExecutionEntity(
     val duration: Long?,
     val dataChunkPath: String? = null, // Path to external file for large logs
     val lastSyncTime: Long = System.currentTimeMillis()
-) 
+)

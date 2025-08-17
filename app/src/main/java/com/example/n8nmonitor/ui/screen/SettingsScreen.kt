@@ -37,10 +37,20 @@ fun SettingsScreen(
     val isDarkMode by viewModel.isDarkMode.collectAsStateWithLifecycle(initialValue = false)
     val isBiometricEnabled by viewModel.isBiometricEnabled.collectAsStateWithLifecycle(initialValue = false)
     val isNotificationEnabled by viewModel.isNotificationEnabled.collectAsStateWithLifecycle(initialValue = true)
+    val settingsState by viewModel.state.collectAsStateWithLifecycle()
 
-    var baseUrlInput by remember { mutableStateOf(baseUrl) }
-    var apiKeyInput by remember { mutableStateOf(apiKey) }
+    var baseUrlInput by remember(baseUrl) { mutableStateOf(baseUrl ?: "") }
+    var apiKeyInput by remember(apiKey) { mutableStateOf(apiKey ?: "") }
     var showApiKey by remember { mutableStateOf(false) }
+    
+    // Update input fields when stored values change
+    LaunchedEffect(baseUrl) {
+        baseUrlInput = baseUrl ?: ""
+    }
+    
+    LaunchedEffect(apiKey) {
+        apiKeyInput = apiKey ?: ""
+    }
 
     Scaffold(
         topBar = {
@@ -64,7 +74,10 @@ fun SettingsScreen(
             SettingsSection(title = "Connection") {
                 OutlinedTextField(
                     value = baseUrlInput ?: "",
-                    onValueChange = { baseUrlInput = it },
+                    onValueChange = { 
+                        baseUrlInput = it
+                        viewModel.updateBaseUrl(it)
+                    },
                     label = { Text("n8n Base URL") },
                     placeholder = { Text("https://your-n8n-instance.com") },
                     leadingIcon = { Icon(Icons.Default.Info, contentDescription = null) },
@@ -73,32 +86,43 @@ fun SettingsScreen(
                         keyboardType = KeyboardType.Uri,
                         imeAction = ImeAction.Next
                     ),
-                    singleLine = true
+                    singleLine = true,
+                    isError = settingsState.baseUrlError != null,
+                    supportingText = settingsState.baseUrlError?.let { error ->
+                        { Text(text = error, color = MaterialTheme.colorScheme.error) }
+                    }
                 )
                 
                 Spacer(modifier = Modifier.height(16.dp))
                 
                 OutlinedTextField(
                     value = apiKeyInput ?: "",
-                    onValueChange = { apiKeyInput = it },
+                    onValueChange = { 
+                        apiKeyInput = it
+                        viewModel.updateApiKey(it)
+                    },
                     label = { Text("API Key") },
                     placeholder = { Text("Enter your n8n API key") },
                     leadingIcon = { Icon(Icons.Default.Settings, contentDescription = null) },
                     trailingIcon = {
                         IconButton(onClick = { showApiKey = !showApiKey }) {
                             Icon(
-                                if (showApiKey) Icons.Default.Info else Icons.Default.Close,
+                                if (showApiKey) Icons.Default.Close else Icons.Default.Info,
                                 contentDescription = if (showApiKey) "Hide API key" else "Show API key"
                             )
                         }
                     },
-                    visualTransformation = if (showApiKey) PasswordVisualTransformation() else PasswordVisualTransformation(),
+                    visualTransformation = if (showApiKey) androidx.compose.ui.text.input.VisualTransformation.None else PasswordVisualTransformation(),
                     modifier = Modifier.fillMaxWidth(),
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Password,
                         imeAction = ImeAction.Done
                     ),
-                    singleLine = true
+                    singleLine = true,
+                    isError = settingsState.apiKeyError != null,
+                    supportingText = settingsState.apiKeyError?.let { error ->
+                        { Text(text = error, color = MaterialTheme.colorScheme.error) }
+                    }
                 )
                 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -109,10 +133,13 @@ fun SettingsScreen(
                 ) {
                     OutlinedButton(
                         onClick = {
-                            viewModel.updateBaseUrl(baseUrlInput ?: "")
-                            viewModel.updateApiKey(apiKeyInput ?: "")
+                            // Validation is handled in real-time by updateBaseUrl/updateApiKey
                         },
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
+                        enabled = settingsState.baseUrlError == null && 
+                                 settingsState.apiKeyError == null &&
+                                 baseUrlInput.isNotBlank() && 
+                                 apiKeyInput.isNotBlank()
                     ) {
                         Icon(Icons.Default.CheckCircle, contentDescription = null)
                         Spacer(modifier = Modifier.width(8.dp))
@@ -120,14 +147,61 @@ fun SettingsScreen(
                     }
                     
                     OutlinedButton(
-                        onClick = {
-                            // Test connection functionality would go here
-                        },
-                        modifier = Modifier.weight(1f)
+                        onClick = { viewModel.testConnection() },
+                        modifier = Modifier.weight(1f),
+                        enabled = !settingsState.isTestingConnection &&
+                                 settingsState.baseUrlError == null && 
+                                 settingsState.apiKeyError == null &&
+                                 baseUrlInput.isNotBlank() && 
+                                 apiKeyInput.isNotBlank()
                     ) {
                         Icon(Icons.Default.Settings, contentDescription = null)
                         Spacer(modifier = Modifier.width(8.dp))
                         Text("Test")
+                    }
+                }
+                
+                // Test connection result
+                settingsState.testConnectionResult?.let { result ->
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = if (result.contains("successful")) 
+                                MaterialTheme.colorScheme.primaryContainer 
+                            else 
+                                MaterialTheme.colorScheme.errorContainer
+                        )
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = result,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = if (result.contains("successful")) 
+                                    MaterialTheme.colorScheme.onPrimaryContainer 
+                                else 
+                                    MaterialTheme.colorScheme.onErrorContainer,
+                                modifier = Modifier.weight(1f)
+                            )
+                            IconButton(
+                                onClick = { viewModel.clearTestResult() }
+                            ) {
+                                Icon(
+                                    Icons.Default.Close,
+                                    contentDescription = "Dismiss",
+                                    tint = if (result.contains("successful")) 
+                                        MaterialTheme.colorScheme.onPrimaryContainer 
+                                    else 
+                                        MaterialTheme.colorScheme.onErrorContainer
+                                )
+                            }
+                        }
                     }
                 }
             }
@@ -231,8 +305,9 @@ fun SettingsScreen(
                         )
                     }
                     Switch(
-                        checked = isBiometricEnabled,
-                        onCheckedChange = { viewModel.toggleBiometric(it) }
+                        checked = false,
+                        onCheckedChange = { /* Biometric authentication disabled */ },
+                        enabled = false
                     )
                 }
             }

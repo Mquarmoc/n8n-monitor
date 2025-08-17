@@ -8,7 +8,14 @@ import androidx.room.PrimaryKey
     tableName = "workflows",
     indices = [
         Index(value = ["active"]),
-        Index(value = ["updatedAt"])
+        Index(value = ["updatedAt"]),
+        Index(value = ["isBookmarked"]),
+        Index(value = ["lastExecutionStatus"]),
+        Index(value = ["lastSyncTime"]),
+        // Composite indexes for common query patterns
+        Index(value = ["active", "isBookmarked", "updatedAt"]),
+        Index(value = ["active", "lastExecutionStatus"]),
+        Index(value = ["lastSyncTime", "active"])
     ]
 )
 data class WorkflowEntity(
@@ -21,4 +28,4 @@ data class WorkflowEntity(
     val lastExecutionTime: String? = null,
     val isBookmarked: Boolean = false,
     val lastSyncTime: Long = System.currentTimeMillis()
-) 
+)

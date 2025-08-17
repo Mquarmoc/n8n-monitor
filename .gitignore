@@ -130,3 +130,12 @@ test-results/
 
 # Documentation build
 docs/_build/
+
+# Environment variables (contains sensitive API keys)
+.env
+.env.local
+.env.*.local
+
+# Google Play Console service account
+service-account.json
+*.json

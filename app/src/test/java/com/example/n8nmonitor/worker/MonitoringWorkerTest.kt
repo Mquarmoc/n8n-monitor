@@ -2,7 +2,6 @@ package com.example.n8nmonitor.worker
 
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
-import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.work.ListenableWorker.Result
 import androidx.work.testing.TestListenableWorkerBuilder
 import com.example.n8nmonitor.data.database.ExecutionEntity
@@ -16,13 +15,12 @@ import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.robolectric.annotation.Config
+import org.robolectric.RobolectricTestRunner
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.TimeUnit
 
-@RunWith(AndroidJUnit4::class)
-@Config(manifest = Config.NONE)
+@RunWith(RobolectricTestRunner::class)
 class MonitoringWorkerTest {
 
     private lateinit var context: Context
@@ -69,8 +67,11 @@ class MonitoringWorkerTest {
                 id = "exec1",
                 workflowId = "workflow1",
                 status = "failed",
-                startTime = System.currentTimeMillis() - 30 * 60 * 1000, // 30 minutes ago
-                endTime = System.currentTimeMillis() - 29 * 60 * 1000,   // 29 minutes ago
+                startTime = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
+                    .format(Date(System.currentTimeMillis() - 30 * 60 * 1000)), // 30 minutes ago
+                endTime = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
+                    .format(Date(System.currentTimeMillis() - 29 * 60 * 1000)),   // 29 minutes ago
+                duration = 60000L, // 1 minute duration
                 dataChunkPath = null
             )
         )

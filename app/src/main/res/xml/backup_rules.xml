@@ -2,6 +2,9 @@
 <full-backup-content>
     <!-- Only backup settings, not sensitive data -->
     <include domain="sharedpref" path="settings"/>
+    <!-- Include domains first, then exclude sensitive data -->
+    <include domain="database"/>
+    <include domain="file"/>
     <exclude domain="database" path="n8n_monitor.db"/>
     <exclude domain="file" path="logs"/>
-</full-backup-content> 
+</full-backup-content>

@@ -16,6 +16,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.n8nmonitor.ui.screen.SettingsScreen
+import com.example.n8nmonitor.ui.screen.StartupScreen
 import com.example.n8nmonitor.ui.screen.WorkflowDetailScreen
 import com.example.n8nmonitor.ui.screen.WorkflowListScreen
 import com.example.n8nmonitor.ui.theme.N8nMonitorTheme
@@ -50,8 +51,23 @@ fun N8nMonitorApp() {
 
     NavHost(
         navController = navController,
-        startDestination = "workflows"
+        startDestination = "startup"
     ) {
+        composable("startup") {
+            StartupScreen(
+                onNavigateToWorkflows = {
+                    navController.navigate("workflows") {
+                        popUpTo("startup") { inclusive = true }
+                    }
+                },
+                onNavigateToSettings = {
+                    navController.navigate("settings") {
+                        popUpTo("startup") { inclusive = true }
+                    }
+                }
+            )
+        }
+        
         composable("workflows") {
             WorkflowListScreen(
                 onWorkflowClick = { workflowId ->
@@ -83,4 +99,4 @@ fun N8nMonitorApp() {
             )
         }
     }
-} 
+}

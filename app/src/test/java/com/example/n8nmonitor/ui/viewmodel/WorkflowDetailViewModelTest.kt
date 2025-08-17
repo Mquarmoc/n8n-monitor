@@ -4,7 +4,6 @@ import androidx.lifecycle.SavedStateHandle
 import com.example.n8nmonitor.data.repository.N8nRepository
 import com.example.n8nmonitor.data.database.WorkflowEntity
 import com.example.n8nmonitor.data.database.ExecutionEntity
-import com.example.n8nmonitor.ui.state.WorkflowDetailState
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
@@ -55,27 +54,26 @@ class WorkflowDetailViewModelTest {
     fun `loadWorkflowDetails sets loading state and updates with workflow and executions`() = runTest {
         // Given
         val workflowId = "1"
-        val workflow = WorkflowEntity(
+        val expectedWorkflow = WorkflowEntity(
             id = workflowId,
             name = "Test Workflow",
             active = true,
-            lastExecutionStatus = "success",
-            lastExecutionTime = System.currentTimeMillis(),
-            isBookmarked = false,
-            lastSyncTime = System.currentTimeMillis()
+            updatedAt = "2023-01-01T00:00:00Z",
+            tags = null
         )
         val executions = listOf(
             ExecutionEntity(
                 id = "exec1",
                 workflowId = workflowId,
                 status = "success",
-                startTime = System.currentTimeMillis(),
-                endTime = System.currentTimeMillis(),
-                dataChunkPath = null
+                startTime = "2023-01-01T00:00:00Z",
+                endTime = "2023-01-01T00:01:00Z",
+                duration = 60000L
             )
         )
         
-        coEvery { repository.getWorkflowDetails(workflowId) } returns Pair(workflow, executions)
+        coEvery { repository.getWorkflow(workflowId) } returns Result.success(expectedWorkflow)
+        coEvery { repository.refreshExecutionsForWorkflow(workflowId, 10) } returns Result.success(executions)
 
         // When
         viewModel.loadWorkflowDetails()
@@ -84,7 +82,7 @@ class WorkflowDetailViewModelTest {
         // Then
         assertFalse(viewModel.state.value.isLoading)
         assertFalse(viewModel.state.value.isRefreshing)
-        assertEquals(workflow, viewModel.state.value.workflow)
+        assertEquals(expectedWorkflow, viewModel.state.value.workflow)
         assertEquals(1, viewModel.state.value.executions.size)
         assertEquals("exec1", viewModel.state.value.executions[0].id)
     }
@@ -93,7 +91,7 @@ class WorkflowDetailViewModelTest {
     fun `loadWorkflowDetails sets error state on exception`() = runTest {
         // Given
         val workflowId = "1"
-        coEvery { repository.getWorkflowDetails(workflowId) } throws RuntimeException("Network error")
+        coEvery { repository.getWorkflow(workflowId) } returns Result.failure(RuntimeException("Network error"))
 
         // When
         viewModel.loadWorkflowDetails()
@@ -115,12 +113,12 @@ class WorkflowDetailViewModelTest {
                 id = "exec2",
                 workflowId = workflowId,
                 status = "success",
-                startTime = System.currentTimeMillis(),
-                endTime = System.currentTimeMillis(),
-                dataChunkPath = null
+                startTime = "2023-01-01T00:00:00Z",
+                endTime = "2023-01-01T00:01:00Z",
+                duration = 60000L
             )
         )
-        coEvery { repository.refreshExecutions(workflowId) } returns executions
+        coEvery { repository.refreshExecutionsForWorkflow(workflowId, 10) } returns Result.success(executions)
 
         // When
         viewModel.refreshExecutions()
@@ -137,7 +135,7 @@ class WorkflowDetailViewModelTest {
     fun `refreshExecutions sets error state on exception`() = runTest {
         // Given
         val workflowId = "1"
-        coEvery { repository.refreshExecutions(workflowId) } throws RuntimeException("API error")
+        coEvery { repository.refreshExecutionsForWorkflow(workflowId, 10) } returns Result.failure(RuntimeException("API error"))
 
         // When
         viewModel.refreshExecutions()
@@ -151,43 +149,54 @@ class WorkflowDetailViewModelTest {
     }
 
     @Test
-    fun `stopExecution calls repository and updates state`() = runTest {
+    fun `stopExecution calls repository and refreshes on success`() = runTest {
         // Given
         val executionId = "exec1"
-        coEvery { repository.stopExecution(executionId) } returns true
+        val updatedExecutions = listOf(
+            ExecutionEntity(
+                id = "exec1",
+                workflowId = "1",
+                status = "stopped",
+                startTime = "2023-01-01T00:00:00Z",
+                endTime = "2023-01-01T00:01:00Z",
+                duration = 60000L
+            )
+        )
+        coEvery { repository.stopExecution(executionId) } returns Result.success(Unit)
+        coEvery { repository.refreshExecutionsForWorkflow("1", 10) } returns Result.success(updatedExecutions)
 
         // When
-        val result = viewModel.stopExecution(executionId)
+        viewModel.stopExecution(executionId)
         testDispatcher.scheduler.advanceUntilIdle()
 
         // Then
-        assertTrue(result)
+        assertEquals(1, viewModel.state.value.executions.size)
+        assertEquals("stopped", viewModel.state.value.executions[0].status)
     }
 
     @Test
-    fun `stopExecution returns false on repository failure`() = runTest {
+    fun `stopExecution sets error on repository failure`() = runTest {
         // Given
         val executionId = "exec1"
-        coEvery { repository.stopExecution(executionId) } returns false
+        coEvery { repository.stopExecution(executionId) } returns Result.failure(RuntimeException("Stop failed"))
 
         // When
-        val result = viewModel.stopExecution(executionId)
+        viewModel.stopExecution(executionId)
         testDispatcher.scheduler.advanceUntilIdle()
 
         // Then
-        assertFalse(result)
+        assertEquals("Stop failed", viewModel.state.value.error)
     }
 
     @Test
     fun `clearError clears error state`() = runTest {
-        // Given
-        viewModel.state.value = WorkflowDetailState(
-            workflow = null,
-            executions = emptyList(),
-            isLoading = false,
-            isRefreshing = false,
-            error = "Some error"
-        )
+        // Given - First cause an error
+        coEvery { repository.getWorkflow("1") } returns Result.failure(RuntimeException("Test error"))
+        viewModel.loadWorkflowDetails()
+        testDispatcher.scheduler.advanceUntilIdle()
+        
+        // Verify error is set
+        assertTrue(viewModel.state.value.error != null)
 
         // When
         viewModel.clearError()
@@ -195,35 +204,4 @@ class WorkflowDetailViewModelTest {
         // Then
         assertNull(viewModel.state.value.error)
     }
-
-    @Test
-    fun `setExecutionToStop sets executionToStop state`() = runTest {
-        // Given
-        val executionId = "exec1"
-
-        // When
-        viewModel.setExecutionToStop(executionId)
-
-        // Then
-        assertEquals(executionId, viewModel.state.value.executionToStop)
-    }
-
-    @Test
-    fun `clearExecutionToStop clears executionToStop state`() = runTest {
-        // Given
-        viewModel.state.value = WorkflowDetailState(
-            workflow = null,
-            executions = emptyList(),
-            isLoading = false,
-            isRefreshing = false,
-            error = null,
-            executionToStop = "exec1"
-        )
-
-        // When
-        viewModel.clearExecutionToStop()
-
-        // Then
-        assertNull(viewModel.state.value.executionToStop)
-    }
-} 
+}

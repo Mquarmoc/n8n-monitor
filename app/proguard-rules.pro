@@ -122,3 +122,12 @@
 # ===== ANTI-TAMPERING =====
 # Keep class names for integrity checks (if implemented)
 # -keep class com.n8nmonitor.security.IntegrityChecker { *; }
+
+# ===== GOOGLE ERROR PRONE ANNOTATIONS =====
+# Handle missing Google Error Prone annotations
+-dontwarn com.google.errorprone.annotations.**
+-keep class com.google.errorprone.annotations.** { *; }
+
+# Google Tink Crypto Library
+-keep class com.google.crypto.tink.** { *; }
+-dontwarn com.google.crypto.tink.**
