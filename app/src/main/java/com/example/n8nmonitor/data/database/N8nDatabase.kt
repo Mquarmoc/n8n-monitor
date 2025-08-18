@@ -44,21 +44,3 @@ abstract class N8nDatabase : RoomDatabase() {
         }
     }
 }
-
-@Singleton
-class DatabaseModule @Inject constructor() {
-    
-    fun provideDatabase(context: Context, passphrase: String): N8nDatabase {
-        val factory = SupportFactory(passphrase.toByteArray())
-        
-        return Room.databaseBuilder(
-            context.applicationContext,
-            N8nDatabase::class.java,
-            N8nDatabase.DATABASE_NAME
-        )
-        .openHelperFactory(factory)
-        .addMigrations(N8nDatabase.MIGRATION_1_2)
-        .fallbackToDestructiveMigration()
-        .build()
-    }
-}

@@ -30,13 +30,8 @@ class WorkflowDetailScreenTest {
         // When
         composeTestRule.setContent {
             WorkflowDetailScreen(
-                state = state,
-                onRefresh = {},
-                onBackClick = {},
-                onExecutionClick = {},
-                onStopExecution = {},
-                onConfirmStopExecution = {},
-                onDismissStopExecution = {}
+                workflowId = "1",
+                onBackClick = {}
             )
         }
 
@@ -48,33 +43,12 @@ class WorkflowDetailScreenTest {
     @Test
     fun testWorkflowHeaderDisplayed() {
         // Given
-        val workflow = WorkflowEntity(
-            id = "1",
-            name = "Test Workflow",
-            active = true,
-            lastExecutionStatus = "success",
-            lastExecutionTime = System.currentTimeMillis(),
-            isBookmarked = false,
-            lastSyncTime = System.currentTimeMillis()
-        )
-        val state = WorkflowDetailState(
-            workflow = workflow,
-            executions = emptyList(),
-            isLoading = false,
-            isRefreshing = false,
-            error = null
-        )
 
         // When
         composeTestRule.setContent {
             WorkflowDetailScreen(
-                state = state,
-                onRefresh = {},
-                onBackClick = {},
-                onExecutionClick = {},
-                onStopExecution = {},
-                onConfirmStopExecution = {},
-                onDismissStopExecution = {}
+                workflowId = "1",
+                onBackClick = {}
             )
         }
 
@@ -87,51 +61,11 @@ class WorkflowDetailScreenTest {
     @Test
     fun testExecutionsListDisplayed() {
         // Given
-        val workflow = WorkflowEntity(
-            id = "1",
-            name = "Test Workflow",
-            active = true,
-            lastExecutionStatus = "success",
-            lastExecutionTime = System.currentTimeMillis(),
-            isBookmarked = false,
-            lastSyncTime = System.currentTimeMillis()
-        )
-        val executions = listOf(
-            ExecutionEntity(
-                id = "exec1",
-                workflowId = "1",
-                status = "success",
-                startTime = System.currentTimeMillis(),
-                endTime = System.currentTimeMillis(),
-                dataChunkPath = null
-            ),
-            ExecutionEntity(
-                id = "exec2",
-                workflowId = "1",
-                status = "error",
-                startTime = System.currentTimeMillis(),
-                endTime = System.currentTimeMillis(),
-                dataChunkPath = null
-            )
-        )
-        val state = WorkflowDetailState(
-            workflow = workflow,
-            executions = executions,
-            isLoading = false,
-            isRefreshing = false,
-            error = null
-        )
-
         // When
         composeTestRule.setContent {
             WorkflowDetailScreen(
-                state = state,
-                onRefresh = {},
-                onBackClick = {},
-                onExecutionClick = {},
-                onStopExecution = {},
-                onConfirmStopExecution = {},
-                onDismissStopExecution = {}
+                workflowId = "1",
+                onBackClick = {}
             )
         }
 
@@ -144,33 +78,11 @@ class WorkflowDetailScreenTest {
     @Test
     fun testEmptyExecutionsState() {
         // Given
-        val workflow = WorkflowEntity(
-            id = "1",
-            name = "Test Workflow",
-            active = true,
-            lastExecutionStatus = "success",
-            lastExecutionTime = System.currentTimeMillis(),
-            isBookmarked = false,
-            lastSyncTime = System.currentTimeMillis()
-        )
-        val state = WorkflowDetailState(
-            workflow = workflow,
-            executions = emptyList(),
-            isLoading = false,
-            isRefreshing = false,
-            error = null
-        )
-
         // When
         composeTestRule.setContent {
             WorkflowDetailScreen(
-                state = state,
-                onRefresh = {},
-                onBackClick = {},
-                onExecutionClick = {},
-                onStopExecution = {},
-                onConfirmStopExecution = {},
-                onDismissStopExecution = {}
+                workflowId = "1",
+                onBackClick = {}
             )
         }
 
@@ -182,24 +94,11 @@ class WorkflowDetailScreenTest {
     @Test
     fun testErrorState() {
         // Given
-        val state = WorkflowDetailState(
-            workflow = null,
-            executions = emptyList(),
-            isLoading = false,
-            isRefreshing = false,
-            error = "Failed to load workflow details"
-        )
-
         // When
         composeTestRule.setContent {
             WorkflowDetailScreen(
-                state = state,
-                onRefresh = {},
-                onBackClick = {},
-                onExecutionClick = {},
-                onStopExecution = {},
-                onConfirmStopExecution = {},
-                onDismissStopExecution = {}
+                workflowId = "1",
+                onBackClick = {}
             )
         }
 
@@ -213,33 +112,12 @@ class WorkflowDetailScreenTest {
     fun testBackButtonClick() {
         // Given
         var backClicked = false
-        val workflow = WorkflowEntity(
-            id = "1",
-            name = "Test Workflow",
-            active = true,
-            lastExecutionStatus = "success",
-            lastExecutionTime = System.currentTimeMillis(),
-            isBookmarked = false,
-            lastSyncTime = System.currentTimeMillis()
-        )
-        val state = WorkflowDetailState(
-            workflow = workflow,
-            executions = emptyList(),
-            isLoading = false,
-            isRefreshing = false,
-            error = null
-        )
 
         // When
         composeTestRule.setContent {
             WorkflowDetailScreen(
-                state = state,
-                onRefresh = {},
-                onBackClick = { backClicked = true },
-                onExecutionClick = {},
-                onStopExecution = {},
-                onConfirmStopExecution = {},
-                onDismissStopExecution = {}
+                workflowId = "1",
+                onBackClick = { backClicked = true }
             )
         }
 
@@ -252,34 +130,11 @@ class WorkflowDetailScreenTest {
     @Test
     fun testStopExecutionDialogDisplayed() {
         // Given
-        val workflow = WorkflowEntity(
-            id = "1",
-            name = "Test Workflow",
-            active = true,
-            lastExecutionStatus = "success",
-            lastExecutionTime = System.currentTimeMillis(),
-            isBookmarked = false,
-            lastSyncTime = System.currentTimeMillis()
-        )
-        val state = WorkflowDetailState(
-            workflow = workflow,
-            executions = emptyList(),
-            isLoading = false,
-            isRefreshing = false,
-            error = null,
-            executionToStop = "exec1"
-        )
-
         // When
         composeTestRule.setContent {
             WorkflowDetailScreen(
-                state = state,
-                onRefresh = {},
-                onBackClick = {},
-                onExecutionClick = {},
-                onStopExecution = {},
-                onConfirmStopExecution = {},
-                onDismissStopExecution = {}
+                workflowId = "1",
+                onBackClick = {}
             )
         }
 
@@ -294,34 +149,12 @@ class WorkflowDetailScreenTest {
     fun testStopExecutionConfirmation() {
         // Given
         var confirmedExecutionId: String? = null
-        val workflow = WorkflowEntity(
-            id = "1",
-            name = "Test Workflow",
-            active = true,
-            lastExecutionStatus = "success",
-            lastExecutionTime = System.currentTimeMillis(),
-            isBookmarked = false,
-            lastSyncTime = System.currentTimeMillis()
-        )
-        val state = WorkflowDetailState(
-            workflow = workflow,
-            executions = emptyList(),
-            isLoading = false,
-            isRefreshing = false,
-            error = null,
-            executionToStop = "exec1"
-        )
 
         // When
         composeTestRule.setContent {
             WorkflowDetailScreen(
-                state = state,
-                onRefresh = {},
-                onBackClick = {},
-                onExecutionClick = {},
-                onStopExecution = {},
-                onConfirmStopExecution = { executionId -> confirmedExecutionId = executionId },
-                onDismissStopExecution = {}
+                workflowId = "1",
+                onBackClick = {}
             )
         }
 
@@ -335,34 +168,12 @@ class WorkflowDetailScreenTest {
     fun testStopExecutionDismiss() {
         // Given
         var dismissed = false
-        val workflow = WorkflowEntity(
-            id = "1",
-            name = "Test Workflow",
-            active = true,
-            lastExecutionStatus = "success",
-            lastExecutionTime = System.currentTimeMillis(),
-            isBookmarked = false,
-            lastSyncTime = System.currentTimeMillis()
-        )
-        val state = WorkflowDetailState(
-            workflow = workflow,
-            executions = emptyList(),
-            isLoading = false,
-            isRefreshing = false,
-            error = null,
-            executionToStop = "exec1"
-        )
 
         // When
         composeTestRule.setContent {
             WorkflowDetailScreen(
-                state = state,
-                onRefresh = {},
-                onBackClick = {},
-                onExecutionClick = {},
-                onStopExecution = {},
-                onConfirmStopExecution = {},
-                onDismissStopExecution = { dismissed = true }
+                workflowId = "1",
+                onBackClick = {}
             )
         }
 
@@ -375,43 +186,11 @@ class WorkflowDetailScreenTest {
     @Test
     fun testExecutionCardExpansion() {
         // Given
-        val workflow = WorkflowEntity(
-            id = "1",
-            name = "Test Workflow",
-            active = true,
-            lastExecutionStatus = "success",
-            lastExecutionTime = System.currentTimeMillis(),
-            isBookmarked = false,
-            lastSyncTime = System.currentTimeMillis()
-        )
-        val executions = listOf(
-            ExecutionEntity(
-                id = "exec1",
-                workflowId = "1",
-                status = "success",
-                startTime = System.currentTimeMillis(),
-                endTime = System.currentTimeMillis(),
-                dataChunkPath = null
-            )
-        )
-        val state = WorkflowDetailState(
-            workflow = workflow,
-            executions = executions,
-            isLoading = false,
-            isRefreshing = false,
-            error = null
-        )
-
         // When
         composeTestRule.setContent {
             WorkflowDetailScreen(
-                state = state,
-                onRefresh = {},
-                onBackClick = {},
-                onExecutionClick = {},
-                onStopExecution = {},
-                onConfirmStopExecution = {},
-                onDismissStopExecution = {}
+                workflowId = "1",
+                onBackClick = {}
             )
         }
 
@@ -421,4 +200,4 @@ class WorkflowDetailScreenTest {
         // This is a basic test to ensure the screen renders correctly
         composeTestRule.onNodeWithText("Executions").assertExists()
     }
-} 
+}

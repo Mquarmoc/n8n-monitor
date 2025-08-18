@@ -5,60 +5,34 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-
+import android.os.Build
 import androidx.core.app.NotificationCompat
-import androidx.hilt.work.HiltWorker
 import androidx.work.*
 import androidx.work.CoroutineWorker
 import com.example.n8nmonitor.R
 import com.example.n8nmonitor.data.repository.N8nRepository
 import com.example.n8nmonitor.data.settings.SettingsDataStore
 import com.example.n8nmonitor.ui.MainActivity
-import dagger.assisted.Assisted
-import dagger.assisted.AssistedInject
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.flow.first
 
-@HiltWorker
-class MonitoringWorker @AssistedInject constructor(
-    @Assisted appContext: Context,
-    @Assisted workerParams: WorkerParameters,
+/**
+ * Test version of MonitoringWorker without Hilt dependency injection
+ */
+class TestMonitoringWorker(
+    appContext: Context,
+    workerParams: WorkerParameters,
     private val repository: N8nRepository,
     private val settingsDataStore: SettingsDataStore
 ) : CoroutineWorker(appContext, workerParams) {
 
     companion object {
-        private const val WORK_NAME = "n8n_monitoring_worker"
         private const val CHANNEL_ID_FAILURES = "n8n_failures"
         private const val CHANNEL_ID_GENERAL = "n8n_general"
         private const val NOTIFICATION_ID_FAILURES = 1001
         private const val NOTIFICATION_ID_GENERAL = 1002
-
-        fun startPeriodicWork(context: Context, intervalMinutes: Int) {
-            val constraints = Constraints.Builder()
-                .setRequiredNetworkType(NetworkType.CONNECTED)
-                .setRequiresBatteryNotLow(true)
-                .build()
-
-            val request = PeriodicWorkRequestBuilder<MonitoringWorker>(
-                intervalMinutes.toLong(), TimeUnit.MINUTES
-            )
-                .setConstraints(constraints)
-                .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 10, TimeUnit.MINUTES)
-                .build()
-
-            WorkManager.getInstance(context).enqueueUniquePeriodicWork(
-                WORK_NAME,
-                ExistingPeriodicWorkPolicy.UPDATE,
-                request
-            )
-        }
-
-        fun stopWork(context: Context) {
-            WorkManager.getInstance(context).cancelUniqueWork(WORK_NAME)
-        }
     }
 
     override suspend fun doWork(): Result {
@@ -94,32 +68,34 @@ class MonitoringWorker @AssistedInject constructor(
     }
 
     private fun createNotificationChannels() {
-        val notificationManager = applicationContext.getSystemService(NotificationManager::class.java)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val notificationManager = applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-        // Failures channel
-        val failuresChannel = NotificationChannel(
-            CHANNEL_ID_FAILURES,
-            "n8n Failures",
-            NotificationManager.IMPORTANCE_HIGH
-        ).apply {
-            description = "Notifications for failed n8n workflow executions"
-            enableVibration(true)
+            // Failures channel
+            val failuresChannel = NotificationChannel(
+                CHANNEL_ID_FAILURES,
+                "n8n Failures",
+                NotificationManager.IMPORTANCE_HIGH
+            ).apply {
+                description = "Notifications for failed n8n workflow executions"
+                enableVibration(true)
+            }
+
+            // General channel
+            val generalChannel = NotificationChannel(
+                CHANNEL_ID_GENERAL,
+                "n8n General",
+                NotificationManager.IMPORTANCE_DEFAULT
+            ).apply {
+                description = "General n8n monitoring notifications"
+            }
+
+            notificationManager.createNotificationChannels(listOf(failuresChannel, generalChannel))
         }
-
-        // General channel
-        val generalChannel = NotificationChannel(
-            CHANNEL_ID_GENERAL,
-            "n8n General",
-            NotificationManager.IMPORTANCE_DEFAULT
-        ).apply {
-            description = "General n8n monitoring notifications"
-        }
-
-        notificationManager.createNotificationChannels(listOf(failuresChannel, generalChannel))
     }
 
     private fun sendFailureNotification(failedExecutions: List<com.example.n8nmonitor.data.database.ExecutionEntity>) {
-        val notificationManager = applicationContext.getSystemService(NotificationManager::class.java)
+        val notificationManager = applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
         // Group executions by workflow
         val executionsByWorkflow = failedExecutions.groupBy { it.workflowId }

@@ -33,6 +33,7 @@ object DatabaseModule {
             N8nDatabase.DATABASE_NAME
         )
         .openHelperFactory(factory)
+        .addMigrations(N8nDatabase.MIGRATION_1_2)
         .fallbackToDestructiveMigration()
         .build()
     }

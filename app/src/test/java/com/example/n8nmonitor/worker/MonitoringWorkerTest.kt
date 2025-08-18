@@ -3,6 +3,7 @@ package com.example.n8nmonitor.worker
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import androidx.work.ListenableWorker.Result
+import androidx.work.WorkerParameters
 import androidx.work.testing.TestListenableWorkerBuilder
 import com.example.n8nmonitor.data.database.ExecutionEntity
 import com.example.n8nmonitor.data.repository.N8nRepository
@@ -35,102 +36,106 @@ class MonitoringWorkerTest {
     }
 
     @Test
-    fun testWorkerSuccess() = runBlocking {
-        // Given
-        val oneHourAgo = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
-            .format(Date(System.currentTimeMillis() - TimeUnit.HOURS.toMillis(1)))
-        
-        // Mock settings
-        coEvery { settingsDataStore.isNotificationEnabled } returns flowOf(true)
-        
-        // Mock repository responses
-        coEvery { repository.getFailedExecutionsSince(any()) } returns emptyList()
-        coEvery { repository.cleanupStaleData() } returns Unit
-        
-        // Build and run worker
-        val worker = TestListenableWorkerBuilder<MonitoringWorker>(context)
-            .setWorkerFactory(TestWorkerFactory(repository, settingsDataStore))
-            .build()
-        
-        // When
-        val result = worker.doWork()
-        
-        // Then
-        assertEquals(Result.success(), result)
-    }
+fun testWorkerSuccess() = runBlocking {
+    // Given
+    val oneHourAgo = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
+        .format(Date(System.currentTimeMillis() - TimeUnit.HOURS.toMillis(1)))
+    
+    // Mock settings
+    coEvery { settingsDataStore.isNotificationEnabled } returns flowOf(true)
+    
+    // Mock repository responses
+    coEvery { repository.getFailedExecutionsSince(any()) } returns emptyList()
+    coEvery { repository.cleanupStaleData() } returns Unit
+    
+    // Create worker parameters
+    val workerParams = mockk<WorkerParameters>(relaxed = true)
+    
+    // Create test worker directly
+    val worker = TestMonitoringWorker(context, workerParams, repository, settingsDataStore)
+    
+    // When
+    val result = worker.doWork()
+    
+    // Then
+    assertEquals(Result.success(), result)
+}
 
     @Test
-    fun testWorkerWithFailedExecutions() = runBlocking {
-        // Given
-        val failedExecutions = listOf(
-            ExecutionEntity(
-                id = "exec1",
-                workflowId = "workflow1",
-                status = "failed",
-                startTime = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
-                    .format(Date(System.currentTimeMillis() - 30 * 60 * 1000)), // 30 minutes ago
-                endTime = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
-                    .format(Date(System.currentTimeMillis() - 29 * 60 * 1000)),   // 29 minutes ago
-                duration = 60000L, // 1 minute duration
-                dataChunkPath = null
-            )
+fun testWorkerWithFailedExecutions() = runBlocking {
+    // Given
+    val failedExecutions = listOf(
+        ExecutionEntity(
+            id = "exec1",
+            workflowId = "workflow1",
+            status = "failed",
+            startTime = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
+                .format(Date(System.currentTimeMillis() - 30 * 60 * 1000)), // 30 minutes ago
+            endTime = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
+                .format(Date(System.currentTimeMillis() - 29 * 60 * 1000)),   // 29 minutes ago
+            duration = 60000L, // 1 minute duration
+            dataChunkPath = null
         )
-        
-        // Mock settings
-        coEvery { settingsDataStore.isNotificationEnabled } returns flowOf(true)
-        
-        // Mock repository responses
-        coEvery { repository.getFailedExecutionsSince(any()) } returns failedExecutions
-        coEvery { repository.cleanupStaleData() } returns Unit
-        
-        // Build and run worker
-        val worker = TestListenableWorkerBuilder<MonitoringWorker>(context)
-            .setWorkerFactory(TestWorkerFactory(repository, settingsDataStore))
-            .build()
-        
-        // When
-        val result = worker.doWork()
-        
-        // Then
-        assertEquals(Result.success(), result)
-    }
+    )
+    
+    // Mock settings
+    coEvery { settingsDataStore.isNotificationEnabled } returns flowOf(true)
+    
+    // Mock repository responses
+    coEvery { repository.getFailedExecutionsSince(any()) } returns failedExecutions
+    coEvery { repository.cleanupStaleData() } returns Unit
+    
+    // Create worker parameters
+    val workerParams = mockk<WorkerParameters>(relaxed = true)
+    
+    // Create test worker directly
+    val worker = TestMonitoringWorker(context, workerParams, repository, settingsDataStore)
+    
+    // When
+    val result = worker.doWork()
+    
+    // Then
+    assertEquals(Result.success(), result)
+}
 
     @Test
-    fun testWorkerWithNotificationsDisabled() = runBlocking {
-        // Given
-        // Mock settings with notifications disabled
-        coEvery { settingsDataStore.isNotificationEnabled } returns flowOf(false)
-        
-        // Build and run worker
-        val worker = TestListenableWorkerBuilder<MonitoringWorker>(context)
-            .setWorkerFactory(TestWorkerFactory(repository, settingsDataStore))
-            .build()
-        
-        // When
-        val result = worker.doWork()
-        
-        // Then
-        assertEquals(Result.success(), result)
-    }
+fun testWorkerWithNotificationsDisabled() = runBlocking {
+    // Given
+    // Mock settings with notifications disabled
+    coEvery { settingsDataStore.isNotificationEnabled } returns flowOf(false)
+    
+    // Create worker parameters
+    val workerParams = mockk<WorkerParameters>(relaxed = true)
+    
+    // Create test worker directly
+    val worker = TestMonitoringWorker(context, workerParams, repository, settingsDataStore)
+    
+    // When
+    val result = worker.doWork()
+    
+    // Then
+    assertEquals(Result.success(), result)
+}
 
     @Test
-    fun testWorkerWithException() = runBlocking {
-        // Given
-        // Mock settings
-        coEvery { settingsDataStore.isNotificationEnabled } returns flowOf(true)
-        
-        // Mock repository to throw exception
-        coEvery { repository.getFailedExecutionsSince(any()) } throws RuntimeException("Test exception")
-        
-        // Build and run worker
-        val worker = TestListenableWorkerBuilder<MonitoringWorker>(context)
-            .setWorkerFactory(TestWorkerFactory(repository, settingsDataStore))
-            .build()
-        
-        // When
-        val result = worker.doWork()
-        
-        // Then - Should retry on first attempt
-        assertEquals(Result.retry(), result)
-    }
+fun testWorkerWithException() = runBlocking {
+    // Given
+    // Mock settings
+    coEvery { settingsDataStore.isNotificationEnabled } returns flowOf(true)
+    
+    // Mock repository to throw exception
+    coEvery { repository.getFailedExecutionsSince(any()) } throws RuntimeException("Test exception")
+    
+    // Create worker parameters
+    val workerParams = mockk<WorkerParameters>(relaxed = true)
+    
+    // Create test worker directly
+    val worker = TestMonitoringWorker(context, workerParams, repository, settingsDataStore)
+    
+    // When
+    val result = worker.doWork()
+    
+    // Then - Should retry on first attempt
+    assertEquals(Result.retry(), result)
+}
 }

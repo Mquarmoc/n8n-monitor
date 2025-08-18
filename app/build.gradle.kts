@@ -4,6 +4,7 @@ import java.io.FileInputStream
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.kotlinAndroid)
+    alias(libs.plugins.composeCompiler)
     alias(libs.plugins.hiltAndroid)
     alias(libs.plugins.ksp)
     id("jacoco")
@@ -14,12 +15,12 @@ plugins {
 
 android {
     namespace = "com.example.n8nmonitor"
-    compileSdk = 34
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.n8nmonitor.app"
         minSdk = 26
-        targetSdk = 34
+        targetSdk = 36
         versionCode = 10
         versionName = "1.0.2"
 
@@ -89,13 +90,13 @@ android {
         buildConfig = true
     }
 
-    composeOptions {
-        kotlinCompilerExtensionVersion = libs.versions.compose.compiler.get()
-    }
+
 
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            excludes += "/META-INF/LICENSE.md"
+            excludes += "/META-INF/LICENSE-notice.md"
         }
     }
 
@@ -119,7 +120,7 @@ dependencies {
     implementation(libs.lifecycle.runtime.ktx)
     implementation(libs.lifecycle.compose)
     implementation(libs.activity.compose)
-    implementation("androidx.security:security-crypto:1.1.0-alpha06")
+    implementation("androidx.security:security-crypto:1.1.0")
 
     // Compose
     implementation(platform(libs.compose.bom))
@@ -146,7 +147,7 @@ dependencies {
     // Database
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
-    implementation("androidx.room:room-paging:2.6.1")
+    implementation("androidx.room:room-paging:2.7.2")
     ksp(libs.room.compiler)
     implementation(libs.sqlcipher)
 
@@ -177,6 +178,7 @@ dependencies {
     androidTestImplementation(libs.espresso.core)
     androidTestImplementation(platform(libs.compose.bom))
     androidTestImplementation(libs.ui.test.junit4)
+    androidTestImplementation(libs.mockk)
     debugImplementation(libs.ui.tooling)
     debugImplementation(libs.ui.test.manifest)
 }

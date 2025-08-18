@@ -27,7 +27,9 @@ import org.robolectric.annotation.Config
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import java.util.concurrent.TimeUnit
+import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.flow.flowOf
 
 @ExperimentalCoroutinesApi
 @RunWith(RobolectricTestRunner::class)
@@ -78,6 +80,10 @@ class N8nRepositoryMockWebServerTest {
         workflowDao = appDatabase.workflowDao()
         executionDao = appDatabase.executionDao()
         settingsDataStore = mockk(relaxed = true)
+        
+        // Mock settingsDataStore to return valid values for dynamic API service creation
+        every { settingsDataStore.baseUrl } returns flowOf(mockWebServer.url("/").toString())
+        every { settingsDataStore.apiKey } returns flowOf("test-api-key")
 
         // Create repository with real dependencies
         repository = N8nRepository(apiService, workflowDao, executionDao, settingsDataStore, okHttpClient, moshi)
@@ -147,8 +153,18 @@ class N8nRepositoryMockWebServerTest {
 
     @Test
     fun `refreshExecutions fetches from API and updates database`() = runTest {
-        // Given - Prepare mock response
+        // Given - First insert the workflow to satisfy foreign key constraint
         val workflowId = "1"
+        val workflowEntity = com.example.n8nmonitor.data.database.WorkflowEntity(
+            id = workflowId,
+            name = "Test Workflow",
+            active = true,
+            updatedAt = "2023-01-01T00:00:00Z",
+            tags = null
+        )
+        workflowDao.insertWorkflows(listOf(workflowEntity))
+        
+        // Prepare mock response
         val mockResponse = MockResponse()
             .setResponseCode(200)
             .setBody("""
@@ -199,21 +215,31 @@ class N8nRepositoryMockWebServerTest {
 
         // Then
         assertTrue(result.isSuccess)
-        assertEquals(true, result.getOrNull())
+        assertEquals(Unit, result.getOrNull())
 
         // Verify the request
         val request = mockWebServer.takeRequest()
-        assertEquals("/executions/$executionId/stop", request.path)
+        assertEquals("/api/v1/executions/$executionId/stop", request.path)
         assertEquals("POST", request.method)
     }
 
     @Test
     fun `getFailedExecutionsSince returns executions from database`() = runTest {
-        // Given - Insert failed executions into database
+        // Given - First insert the workflow to satisfy foreign key constraint
         val workflowId = "1"
         val executionId = "exec1"
         val timestamp = "2023-01-01T00:00:00.000Z"
         
+        val workflowEntity = com.example.n8nmonitor.data.database.WorkflowEntity(
+            id = workflowId,
+            name = "Test Workflow",
+            active = true,
+            updatedAt = "2023-01-01T00:00:00Z",
+            tags = null
+        )
+        workflowDao.insertWorkflows(listOf(workflowEntity))
+        
+        // Insert failed executions into database
         val execution = com.example.n8nmonitor.data.database.ExecutionEntity(
             id = executionId,
             workflowId = workflowId,
