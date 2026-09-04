@@ -15,4 +15,4 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "n8n-monitor"
-include(":app") 
+include(":app")
