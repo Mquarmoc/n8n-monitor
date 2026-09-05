@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
@@ -21,6 +22,7 @@ import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import java.io.IOException
 import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.CancellationException
 
 internal fun unseenExecutions(
     executions: List<Execution>,
@@ -34,7 +36,7 @@ class FailureMonitorWorker(
     override suspend fun doWork(): Result {
         val store = runCatching { SettingsStore(applicationContext) }
             .getOrElse { return Result.failure() }
-        val settings = store.load()
+        val settings = runCatching { store.load() }.getOrElse { return Result.failure() }
         if (!settings.notificationsEnabled ||
             validateMonitorSettings(settings.baseUrl, settings.apiKey) != null
         ) return Result.success()
@@ -47,6 +49,8 @@ class FailureMonitorWorker(
             }
             store.recordSeenErrorIds(errors.map(Execution::id) + previousIds)
             Result.success()
+        } catch (cancelled: CancellationException) {
+            throw cancelled
         } catch (_: IOException) {
             if (runAttemptCount < 3) Result.retry() else Result.failure()
         } catch (_: Exception) {
@@ -55,7 +59,8 @@ class FailureMonitorWorker(
     }
 
     private fun notify(errors: List<Execution>) {
-        if (ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.POST_NOTIFICATIONS) !=
+        if (Build.VERSION.SDK_INT >= 33 &&
+            ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.POST_NOTIFICATIONS) !=
             PackageManager.PERMISSION_GRANTED
         ) return
 

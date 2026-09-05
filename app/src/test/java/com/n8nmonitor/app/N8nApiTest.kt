@@ -5,8 +5,22 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertThrows
 import org.junit.Test
+import java.net.URL
 
 class N8nApiTest {
+    @Test
+    fun doesNotForwardApiKeysThroughRedirects() {
+        val connection = openApiConnection(URL("https://n8n.example.com/api/v1/workflows"), " test-key ")
+        try {
+            assertEquals(false, connection.instanceFollowRedirects)
+            assertEquals("test-key", connection.getRequestProperty("X-N8N-API-KEY"))
+            assertEquals(15_000, connection.connectTimeout)
+            assertEquals(15_000, connection.readTimeout)
+        } finally {
+            connection.disconnect()
+        }
+    }
+
     @Test
     fun parsesDocumentedWorkflowEnvelope() {
         val workflows = parseWorkflows(

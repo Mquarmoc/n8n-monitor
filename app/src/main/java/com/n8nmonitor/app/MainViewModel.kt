@@ -3,6 +3,8 @@ package com.n8nmonitor.app
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -19,8 +21,9 @@ data class MainUiState(
 )
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
-    private val store = SettingsStore(application)
+    private val store by lazy { SettingsStore(application) }
     private val api = N8nApi()
+    private var loadJob: Job? = null
     private val _ui = MutableStateFlow(
         runCatching { MainUiState(settings = store.load()) }
             .getOrElse { MainUiState(error = "Encrypted settings could not be opened.") },
@@ -75,6 +78,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                     _ui.update { it.copy(testing = false, notice = "Connection successful.") }
                 },
                 onFailure = { failure ->
+                    if (failure is CancellationException) throw failure
                     _ui.update {
                         it.copy(testing = false, error = failure.message ?: "Connection failed.")
                     }
@@ -91,16 +95,19 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun loadExecutions(workflowId: String) = load {
+        _ui.update { it.copy(executions = emptyList()) }
         val executions = api.executions(_ui.value.settings, workflowId = workflowId)
         _ui.update { it.copy(executions = executions) }
     }
 
     private fun load(block: suspend () -> Unit) {
-        viewModelScope.launch {
+        loadJob?.cancel()
+        loadJob = viewModelScope.launch {
             _ui.update { it.copy(loading = true, error = null) }
             runCatching { block() }.fold(
                 onSuccess = { _ui.update { it.copy(loading = false) } },
                 onFailure = { failure ->
+                    if (failure is CancellationException) throw failure
                     _ui.update {
                         it.copy(loading = false, error = failure.message ?: "n8n could not be reached.")
                     }

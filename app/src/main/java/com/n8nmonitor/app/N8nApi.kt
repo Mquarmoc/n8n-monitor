@@ -50,6 +50,7 @@ class N8nApi {
     ): List<Execution> {
         val query = buildMap {
             put("limit", limit.toString())
+            put("includeData", "false")
             workflowId?.takeIf(String::isNotBlank)?.let { put("workflowId", it) }
             status?.takeIf(String::isNotBlank)?.let { put("status", it) }
         }
@@ -66,15 +67,8 @@ class N8nApi {
             "${encode(key)}=${encode(value)}"
         }
         val url = URL("${settings.baseUrl.trim().trimEnd('/')}/api/v1/$path?$encodedQuery")
-        val connection = url.openConnection() as HttpURLConnection
+        val connection = openApiConnection(url, settings.apiKey)
         try {
-            connection.requestMethod = "GET"
-            connection.connectTimeout = 15_000
-            connection.readTimeout = 15_000
-            connection.setRequestProperty("Accept", "application/json")
-            connection.setRequestProperty("User-Agent", "n8n-monitor-android/0.1.0")
-            connection.setRequestProperty("X-N8N-API-KEY", settings.apiKey.trim())
-
             val statusCode = connection.responseCode
             val body = (if (statusCode in 200..299) connection.inputStream else connection.errorStream)
                 ?.bufferedReader()
@@ -94,6 +88,7 @@ class N8nApi {
             .getOrNull()
             ?.takeIf(String::isNotBlank)
         return when (statusCode) {
+            in 300..399 -> "n8n redirected the request. Enter the final HTTPS URL in Settings."
             401 -> "The n8n API key was rejected."
             403 -> "The API key cannot access this n8n resource."
             404 -> "The n8n public API was not found at this URL."
@@ -101,6 +96,17 @@ class N8nApi {
         }
     }
 }
+
+internal fun openApiConnection(url: URL, apiKey: String): HttpURLConnection =
+    (url.openConnection() as HttpURLConnection).apply {
+        instanceFollowRedirects = false
+        requestMethod = "GET"
+        connectTimeout = 15_000
+        readTimeout = 15_000
+        setRequestProperty("Accept", "application/json")
+        setRequestProperty("User-Agent", "n8n-monitor-android")
+        setRequestProperty("X-N8N-API-KEY", apiKey.trim())
+    }
 
 internal fun parseWorkflows(json: String): List<Workflow> {
     val data = JSONObject(json).getJSONArray("data")

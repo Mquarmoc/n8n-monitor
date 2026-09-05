@@ -30,6 +30,12 @@ Install JDK 17 and Android SDK 36, then run:
 
 The test APK is written to `app/build/outputs/apk/debug/app-debug.apk`. GitHub Actions runs the same checks and uploads that APK as a workflow artifact.
 
+For a Google Play bundle, run `./gradlew lintRelease bundleRelease`, then sign
+`app/build/outputs/bundle/release/app-release.aab` with the existing private upload
+key using `jarsigner`. Keep signing passwords and Play credentials outside this
+repository. Version 1.1.0 uses version code 11, continuing the existing Play app's
+version history. Existing testers may need to re-enter their connection settings.
+
 ## Current limits
 
 - One n8n instance per app installation.
@@ -40,4 +46,4 @@ The test APK is written to `app/build/outputs/apk/debug/app-debug.apk`. GitHub A
 
 ## Security
 
-Only HTTPS endpoints are accepted. Android's normal certificate validation remains enabled, backups are disabled, and the API key is not logged or committed to source control.
+Only HTTPS endpoints are accepted. Redirects are rejected so the API key cannot be forwarded to another endpoint. Android's normal certificate validation remains enabled, backups are disabled, and the API key is not logged or committed to source control.

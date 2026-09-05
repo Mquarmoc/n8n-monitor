@@ -19,8 +19,12 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -47,6 +51,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -87,13 +93,13 @@ private fun App(viewModel: MainViewModel, deepWorkflowId: String?) {
     val ui by viewModel.ui.collectAsState()
     val navigation = rememberNavController()
     val configured = validateMonitorSettings(ui.settings.baseUrl, ui.settings.apiKey) == null
+    val startDestination = remember { if (configured) "workflows" else "settings" }
 
     LaunchedEffect(Unit) {
         if (configured) viewModel.loadWorkflows()
     }
     LaunchedEffect(deepWorkflowId) {
         if (configured && !deepWorkflowId.isNullOrBlank()) {
-            viewModel.loadExecutions(deepWorkflowId)
             navigation.navigate("workflow/${Uri.encode(deepWorkflowId)}")
         }
     }
@@ -101,7 +107,7 @@ private fun App(viewModel: MainViewModel, deepWorkflowId: String?) {
     Surface(Modifier.fillMaxSize()) {
         NavHost(
             navController = navigation,
-            startDestination = if (configured) "workflows" else "settings",
+            startDestination = startDestination,
         ) {
             composable("settings") {
                 SettingsScreen(
@@ -125,7 +131,6 @@ private fun App(viewModel: MainViewModel, deepWorkflowId: String?) {
                     onRefresh = viewModel::loadWorkflows,
                     onSettings = { navigation.navigate("settings") },
                     onWorkflow = { workflowId ->
-                        viewModel.loadExecutions(workflowId)
                         navigation.navigate("workflow/${Uri.encode(workflowId)}")
                     },
                 )
@@ -135,6 +140,7 @@ private fun App(viewModel: MainViewModel, deepWorkflowId: String?) {
                 arguments = listOf(navArgument("workflowId") { type = NavType.StringType }),
             ) { entry ->
                 val workflowId = entry.arguments?.getString("workflowId").orEmpty()
+                LaunchedEffect(workflowId) { viewModel.loadExecutions(workflowId) }
                 ExecutionsScreen(
                     workflowId = workflowId,
                     ui = ui,
@@ -163,7 +169,7 @@ private fun SettingsScreen(
         notifications = it
     }
 
-    Page {
+    Page(Modifier.verticalScroll(rememberScrollState())) {
         Text("n8n Monitor", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
         Text("Connect one n8n instance. The API key stays encrypted on this device.")
         OutlinedTextField(
@@ -203,6 +209,7 @@ private fun SettingsScreen(
                 Text("The first check establishes a baseline.", style = MaterialTheme.typography.bodySmall)
             }
             Switch(
+                modifier = Modifier.semantics { contentDescription = "Failure notifications" },
                 checked = notifications,
                 onCheckedChange = { enabled ->
                     if (enabled && Build.VERSION.SDK_INT >= 33 &&
@@ -326,9 +333,9 @@ private fun Feedback(ui: MainUiState) {
 }
 
 @Composable
-private fun Page(content: @Composable ColumnScope.() -> Unit) {
+private fun Page(modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> Unit) {
     Column(
-        modifier = Modifier.fillMaxSize().padding(20.dp),
+        modifier = Modifier.fillMaxSize().safeDrawingPadding().imePadding().then(modifier).padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
         content = content,
     )
